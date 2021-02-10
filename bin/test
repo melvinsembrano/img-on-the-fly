@@ -1,0 +1,3 @@
+#/bin/bash
+
+ruby -I . -e "require 'minitest/autorun'; Dir.glob('**/*test.rb') { |f| require(f) }"
