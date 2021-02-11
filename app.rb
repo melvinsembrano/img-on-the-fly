@@ -1,10 +1,14 @@
 require "sinatra/base"
 
 class App < Sinatra::Base
-    set :sessions, true
-    enable :logging
+  register Sinatra::ConfigFile
+  set :sessions, true
+  enable :logging
 
-    get "/*" do
-        "Hello world #{ params.inspect }"
-    end
+  config_file "config/app.yml"
+
+  get "/*" do
+    "Hello world #{params.inspect} ----- #{ settings.aws.inspect }"
+  end
+
 end

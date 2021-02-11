@@ -1,0 +1,4 @@
+aws:
+  hello: "melvin"
+  endpoint: <%= "melvin" %>
+  bucket: <%= ENV["AWS_BUCKET"] %>

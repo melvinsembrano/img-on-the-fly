@@ -1,12 +1,30 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    aws-eventstream (1.1.0)
+    aws-partitions (1.426.0)
+    aws-sdk-core (3.112.0)
+      aws-eventstream (~> 1, >= 1.0.2)
+      aws-partitions (~> 1, >= 1.239.0)
+      aws-sigv4 (~> 1.1)
+      jmespath (~> 1.0)
+    aws-sdk-kms (1.42.0)
+      aws-sdk-core (~> 3, >= 3.112.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-s3 (1.88.0)
+      aws-sdk-core (~> 3, >= 3.112.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.1)
+    aws-sigv4 (1.2.2)
+      aws-eventstream (~> 1, >= 1.0.2)
     ffi (1.14.2)
     image_processing (1.12.1)
       mini_magick (>= 4.9.5, < 5)
       ruby-vips (>= 2.0.17, < 3)
+    jmespath (1.4.0)
     mini_magick (4.11.0)
     minitest (5.14.3)
+    multi_json (1.15.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.5.5)
@@ -15,6 +33,7 @@ GEM
     rack (2.2.3)
     rack-protection (2.1.0)
       rack
+    rexml (3.2.4)
     ruby-vips (2.0.17)
       ffi (~> 1.9)
     ruby2_keywords (0.0.4)
@@ -23,16 +42,25 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.1.0)
       tilt (~> 2.0)
+    sinatra-contrib (2.1.0)
+      multi_json
+      mustermann (~> 1.0)
+      rack-protection (= 2.1.0)
+      sinatra (= 2.1.0)
+      tilt (~> 2.0)
     tilt (2.0.10)
 
 PLATFORMS
   x86_64-darwin-19
 
 DEPENDENCIES
+  aws-sdk-s3 (~> 1.88)
   image_processing
   minitest (~> 5.14)
   puma
+  rexml
   sinatra
+  sinatra-contrib
 
 BUNDLED WITH
    2.2.3
