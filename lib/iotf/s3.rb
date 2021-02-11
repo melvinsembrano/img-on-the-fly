@@ -1,6 +1,7 @@
 require "aws-sdk-s3"
 require_relative "../../config/s3_config"
-require 'fileutils'
+require "fileutils"
+require "securerandom"
 
 module Iotf
   class S3
@@ -14,7 +15,7 @@ module Iotf
     end
 
     def download(key)
-      target_path = File.join(download_folder, key)
+      target_path = File.join(download_folder,  SecureRandom.hex(4), key)
       setup_target_folder target_path
 
       get_params = {

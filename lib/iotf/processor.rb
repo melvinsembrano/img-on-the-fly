@@ -1,3 +1,6 @@
+require "vips"
+require "securerandom"
+
 module Iotf
   class Processor
     attr_accessor :procedures, :options, :image_path, :cached_file, :final_path
@@ -13,8 +16,13 @@ module Iotf
         raise "File not found"
       end
 
-      # "this will be a new image data from #{self.inspect} #{ cached_file }"
-      @final_path = cached_file
+      @final_path = File.join(File.dirname(cached_file), "#{ SecureRandom.hex(2) }-#{ File.basename(cached_file) }")
+
+      @pipeline = ImageProcessing::Vips
+      @pipeline = @pipeline.source(cached_file)
+      procedures.each { |p|  self.send(p.to_sym) if self.respond_to?(p.to_sym) }
+      @pipeline.call(destination: @final_path)
+      @final_path
     end
 
     def exist?(check_source: true)
@@ -41,5 +49,15 @@ module Iotf
       # add more extraction here
       @procedures << "resize" if @procedures.empty?
     end
+
+    def resize
+      resize_command = case @options[:fit]
+      when "fill", "crop"
+        @pipeline = @pipeline.resize_to_fill @options[:width], @options[:height]
+      else
+        @pipeline = @pipeline.resize_to_fit @options[:width], @options[:height]
+      end
+    end
+
   end
 end
