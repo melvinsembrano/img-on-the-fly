@@ -17,6 +17,7 @@ GEM
       aws-sigv4 (~> 1.1)
     aws-sigv4 (1.2.2)
       aws-eventstream (~> 1, >= 1.0.2)
+    dotenv (2.7.6)
     ffi (1.14.2)
     image_processing (1.12.1)
       mini_magick (>= 4.9.5, < 5)
@@ -55,6 +56,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-s3 (~> 1.88)
+  dotenv
   image_processing
   minitest (~> 5.14)
   puma

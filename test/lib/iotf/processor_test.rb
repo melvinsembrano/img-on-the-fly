@@ -1,14 +1,14 @@
 require "test/test_helper"
 
-class IotfTest < MiniTest::Test
+class Iotf::ProcessorTest < MiniTest::Test
 
   def test_file_does_not_exist
-    iotf = Iotf.new({})
+    iotf = Iotf::Processor.new({})
     assert !iotf.exist?, "should not exist"
   end
 
   def test_file_exist
-    iotf = Iotf.new({splat: "/test/image.jpg"})
+    iotf = Iotf::Processor.new({splat: "/test/image.jpg"})
     iotf.stub(:cached_file, "/local/file/test/image.jpg") do
       assert iotf.exist?, "should exist"
     end
@@ -20,7 +20,7 @@ class IotfTest < MiniTest::Test
       "h" => 100,
       "w" => "120"
     }
-    iotf = Iotf.new(params)
+    iotf = Iotf::Processor.new(params)
 
     assert_equal params["splat"], iotf.image_path
     assert_equal 100, iotf.options[:height]

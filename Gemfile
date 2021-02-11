@@ -10,6 +10,7 @@ gem "image_processing"
 gem "puma"
 gem "aws-sdk-s3", "~> 1.88"
 gem "rexml"
+gem "dotenv"
 
 group :test do
   gem "minitest", "~> 5.14"
