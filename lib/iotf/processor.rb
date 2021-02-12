@@ -16,12 +16,18 @@ module Iotf
         raise "File not found"
       end
 
+      # if no procedures return the original file
+      if procedures.empty?
+        return cached_file
+      end
+
       @final_path = File.join(File.dirname(cached_file), "#{ SecureRandom.hex(2) }-#{ File.basename(cached_file) }")
 
       @pipeline = ImageProcessing::Vips
       @pipeline = @pipeline.source(cached_file)
       procedures.each { |p|  self.send(p.to_sym) if self.respond_to?(p.to_sym) }
       @pipeline.call(destination: @final_path)
+
       @final_path
     end
 
@@ -47,7 +53,9 @@ module Iotf
       @options[:fit] = opts[:fit] || "fill"
 
       # add more extraction here
-      @procedures << "resize" if @procedures.empty?
+      if @procedures.empty? && @options[:width] > 0 && @options[:height] > 0
+        @procedures << "resize" 
+      end
     end
 
     def resize

@@ -10,11 +10,14 @@ class App < Sinatra::Base
     unless request.path.match(/__sinatra__/)
       begin
         iotf = Iotf::Processor.new(params)
-        iotf.execute!
-        send_file iotf.final_path
+        processed_file_path = iotf.execute!
+
+        cache_control :public, max_age: 86400
+        send_file processed_file_path
       rescue => err
         logger.error err
         status 404
+        "File not found"
       end
     end
   end
