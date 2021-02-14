@@ -25,10 +25,36 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal params["splat"], iotf.image_path
     assert_equal 100, iotf.options[:height]
     assert_equal 120, iotf.options[:width]
+
+    assert_equal 1, iotf.procedures.length
+    assert_equal :resize, iotf.procedures.first
+  end
+
+  def test_resize_with_x_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "resize" => "100x120"
+    }
+    iotf = Iotf::Processor.new(params)
+
+    assert_equal 100, iotf.options[:width]
+    assert_equal 120, iotf.options[:height]
+    assert_equal 1, iotf.procedures.length
+    assert_equal :resize, iotf.procedures.first   
+  end
+
+  def test_resize_with_comma_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "resize" => "100,120,fill"
+    }
+    iotf = Iotf::Processor.new(params)
+
+    assert_equal 100, iotf.options[:width]
+    assert_equal 120, iotf.options[:height]
     assert_equal "fill", iotf.options[:fit]
 
     assert_equal 1, iotf.procedures.length
-    assert_equal "resize", iotf.procedures.first
+    assert_equal :resize, iotf.procedures.first   
   end
-
 end

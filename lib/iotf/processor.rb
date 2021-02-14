@@ -21,14 +21,18 @@ module Iotf
         return cached_file
       end
 
-      @final_path = File.join(File.dirname(cached_file), "#{ SecureRandom.hex(2) }-#{ File.basename(cached_file) }")
+      final_path = File.join(File.dirname(cached_file), "#{ SecureRandom.hex(2) }-#{ File.basename(cached_file) }")
+      process_image(cached_file, final_path)
+      final_path
+    end
 
-      @pipeline = ImageProcessing::Vips
-      @pipeline = @pipeline.source(cached_file)
-      procedures.each { |p|  self.send(p.to_sym) if self.respond_to?(p.to_sym) }
-      @pipeline.call(destination: @final_path)
+    def process_image(source, destination, procs = nil)
+      pipeline = ImageProcessing::Vips
+      pipeline = pipeline.source(source)
 
-      @final_path
+      (procs || procedures).each { |p|  pipeline = self.send(p, pipeline) if self.respond_to?(p.to_sym) }
+
+      pipeline.call(destination: destination)
     end
 
     def exist?(check_source: true)
@@ -47,23 +51,46 @@ module Iotf
     end
 
     def parse_options(opts)
-      @image_path = [opts[:splat]].flatten.first
-      @options[:width] = (opts[:w] || opts[:wid] || opts[:width]).to_f
-      @options[:height] = (opts[:h] || opts[:hei] || opts[:height]).to_f
-      @options[:fit] = opts[:fit] || "fill"
+      opts.each do |k,v|
+        case k.to_s.downcase
+        when "splat"
+          @image_path = [opts[:splat]].flatten.first
+        when "w", "wid", "width"
+            @options[:width] = v.to_f
+        when "h", "hei", "height"
+            @options[:height] = v.to_f
+
+        when "resize"
+          @procedures << k
+          resize_args = v.split(/[\,,x]/)
+          @options[:width] = (resize_args[0] || @options[:width]).to_f
+          @options[:height] = (resize_args[1] || @options[:height]).to_f
+          @options[:fit] = resize_args[2] || @options[:fit]
+
+        # supported procs
+        when "rotate", "crop", "composite", "convert", "collage"
+          @procedures << k
+          @options["#{k}_args".to_sym] = v
+        else
+          @options[k.to_sym] = v
+        end
+      end
 
       # add more extraction here
-      if @procedures.empty? && @options[:width] > 0 && @options[:height] > 0
-        @procedures << "resize" 
+      if @procedures.empty? && @options[:width].to_f > 0 && @options[:height].to_f > 0
+        @procedures << :resize
       end
     end
 
-    def resize
+    def resize(pipeline)
       resize_command = case @options[:fit]
-      when "fill", "crop"
-        @pipeline = @pipeline.resize_to_fill @options[:width], @options[:height]
+
+      when "fill"
+        pipeline = pipeline.resize_to_fill @options[:width], @options[:height]
+      when "pad"
+        pipeline = pipeline.resize_and_pad @options[:width], @options[:height]
       else
-        @pipeline = @pipeline.resize_to_fit @options[:width], @options[:height]
+        pipeline = pipeline.resize_to_fit @options[:width], @options[:height]
       end
     end
 
