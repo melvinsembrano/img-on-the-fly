@@ -8,6 +8,8 @@ class App < Sinatra::Base
 
   get "/*" do
     unless request.path.match(/__sinatra__/)
+      logger.info("Process request: #{ params }")
+
       begin
         iotf = Iotf::Processor.new(params)
         processed_file_path = iotf.execute!

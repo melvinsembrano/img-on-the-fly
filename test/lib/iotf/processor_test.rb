@@ -57,4 +57,58 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal 1, iotf.procedures.length
     assert_equal :resize, iotf.procedures.first   
   end
+
+  def test_crop_with_commas_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "crop" => "10,11,120,100"
+    }
+    iotf = Iotf::Processor.new(params)
+
+    assert_equal 10, iotf.options[:left]
+    assert_equal 11, iotf.options[:top]
+    assert_equal 120, iotf.options[:width]
+    assert_equal 100, iotf.options[:height]
+
+    assert_equal 1, iotf.procedures.length
+    assert_equal :crop, iotf.procedures.first   
+  end
+
+  def test_crop_with_x_and_commas_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "crop" => "10,11,120x100"
+    }
+    iotf = Iotf::Processor.new(params)
+
+    assert_equal 10, iotf.options[:left]
+    assert_equal 11, iotf.options[:top]
+    assert_equal 120, iotf.options[:width]
+    assert_equal 100, iotf.options[:height]
+
+    assert_equal 1, iotf.procedures.length
+    assert_equal :crop, iotf.procedures.first   
+  end
+
+  def test_rotate_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "rotate" => "45"
+    }
+    iotf = Iotf::Processor.new(params)
+
+    assert_equal 45, iotf.options[:rotation]
+    assert_equal 1, iotf.procedures.length
+    assert_equal :rotate, iotf.procedures.first
+  end
+
+  def test_background_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "background" => "45,46,47"
+    }
+    iotf = Iotf::Processor.new(params)
+    assert_equal [45, 46, 47], iotf.options[:background]
+  end
+
 end

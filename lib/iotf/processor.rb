@@ -60,6 +60,9 @@ module Iotf
         when "h", "hei", "height"
             @options[:height] = v.to_f
 
+        when "background", "bg"
+          @options[:background] = v.split(/[\,,x]/).map { |i| i.to_f }
+          
         when "resize"
           @procedures << k
           resize_args = v.split(/[\,,x]/)
@@ -67,8 +70,22 @@ module Iotf
           @options[:height] = (resize_args[1] || @options[:height]).to_f
           @options[:fit] = resize_args[2] || @options[:fit]
 
+        when "crop"
+          @procedures << k
+          resize_args = v.split(/[\,,x]/)
+
+          @options[:left] = resize_args[0].to_f
+          @options[:top] = resize_args[1].to_f
+          @options[:width] = (resize_args[2] || @options[:width]).to_f
+          @options[:height] = (resize_args[3] || @options[:height]).to_f
+
+        when "rotate"
+          @procedures << k
+          resize_args = v.split(/[\,,x]/)
+          @options[:rotation] = resize_args[0].to_f
+
         # supported procs
-        when "rotate", "crop", "composite", "convert", "collage"
+        when "composite", "convert", "collage"
           @procedures << k
           @options["#{k}_args".to_sym] = v
         else
@@ -83,15 +100,24 @@ module Iotf
     end
 
     def resize(pipeline)
-      resize_command = case @options[:fit]
-
+      case options[:fit]
       when "fill"
-        pipeline = pipeline.resize_to_fill @options[:width], @options[:height]
+        pipeline = pipeline.resize_to_fill options[:width], options[:height]
       when "pad"
-        pipeline = pipeline.resize_and_pad @options[:width], @options[:height]
+        pipeline = pipeline.resize_and_pad options[:width], options[:height]
       else
-        pipeline = pipeline.resize_to_fit @options[:width], @options[:height]
+        pipeline = pipeline.resize_to_fit options[:width], options[:height]
       end
+      pipeline
+    end
+
+    def crop(pipeline)
+      pipeline = pipeline.crop options[:left], options[:top], options[:width], options[:height]
+    end
+
+    def rotate(pipeline)
+      background = options[:background] || [0, 0, 0]
+      pipeline = pipeline.rotate @options[:rotation], background: options[:background]
     end
 
   end
