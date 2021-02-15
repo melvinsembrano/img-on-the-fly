@@ -111,4 +111,18 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal [45, 46, 47], iotf.options[:background]
   end
 
+  def test_collage_args
+    params = {
+      "splat" => "path/to/image.jpg",
+      "collage" => "0,1,20,21|30,31,22,23,15|100,101, 25,26"
+    }
+    iotf = Iotf::Processor.new(params)
+
+    assert_equal [
+      [0,1,20,21],
+      [30,31,22,23,15],
+      [100,101,25,26]
+    ], iotf.options[:collage_args]
+  end
+
 end

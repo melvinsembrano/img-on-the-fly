@@ -62,6 +62,10 @@ module Iotf
 
         when "background", "bg"
           @options[:background] = v.split(/[\,,x]/).map { |i| i.to_f }
+
+        when "text"
+          @procedures << :write_text
+          @options[:text], @options[:text_args] = v.split("|")
           
         when "resize"
           @procedures << k
@@ -71,21 +75,28 @@ module Iotf
           @options[:fit] = resize_args[2] || @options[:fit]
 
         when "crop"
-          @procedures << k
-          resize_args = v.split(/[\,,x]/)
-
-          @options[:left] = resize_args[0].to_f
-          @options[:top] = resize_args[1].to_f
-          @options[:width] = (resize_args[2] || @options[:width]).to_f
-          @options[:height] = (resize_args[3] || @options[:height]).to_f
+          if v == "smart"
+            @procedures << :smart_crop
+          else
+            @procedures << k
+            resize_args = v.split(/[\,,x]/)
+            @options[:left] = resize_args[0].to_f
+            @options[:top] = resize_args[1].to_f
+            @options[:width] = (resize_args[2] || @options[:width]).to_f
+            @options[:height] = (resize_args[3] || @options[:height]).to_f
+          end
 
         when "rotate"
           @procedures << k
           resize_args = v.split(/[\,,x]/)
           @options[:rotation] = resize_args[0].to_f
 
+        when "collage"
+          @procedures << k
+          @options["#{k}_args".to_sym] = v.split("|").map {|i| i.split(/[\,,x]/).map {|f| f.to_f } }
+
         # supported procs
-        when "composite", "convert", "collage"
+        when "composite", "convert"
           @procedures << k
           @options["#{k}_args".to_sym] = v
         else
@@ -102,22 +113,58 @@ module Iotf
     def resize(pipeline)
       case options[:fit]
       when "fill"
-        pipeline = pipeline.resize_to_fill options[:width], options[:height]
+        return pipeline.resize_to_fill options[:width], options[:height]
       when "pad"
-        pipeline = pipeline.resize_and_pad options[:width], options[:height]
+        return pipeline.resize_and_pad options[:width], options[:height]
       else
-        pipeline = pipeline.resize_to_fit options[:width], options[:height]
+        return pipeline.resize_to_fit options[:width], options[:height]
       end
-      pipeline
     end
 
-    def crop(pipeline)
-      pipeline = pipeline.crop options[:left], options[:top], options[:width], options[:height]
+    def crop(pipeline, crop_args=nil)
+      left, top, width, height = crop_args || [options[:left], options[:top], options[:width], options[:height]]
+      pipeline.crop left, top, width, height
     end
 
     def rotate(pipeline)
       background = options[:background] || [0, 0, 0]
-      pipeline = pipeline.rotate @options[:rotation], background: options[:background]
+      pipeline.rotate options[:rotation], background: options[:background]
+    end
+
+    def collage(pipeline)
+      images = []
+      width = 0
+      height = 0
+      options[:collage_args].each_with_index do |cargs, i|
+        images[i] = crop(pipeline, cargs).call
+        width += cargs[2]
+        height = cargs[3] if cargs[3] > height
+      end
+      width = width + ((images.length + 1) * 40 )
+      height = height + 80
+      puts images.inspect
+
+      collage_pipeline = crop(pipeline, [0, 0, width, height])
+        .draw_rect(options[:background], 0, 0, width, height, fill: true)
+
+      x = 40
+      images.each_with_index do |img, i|
+        y = (height * 0.5)  - (options[:collage_args][i][3] * 0.5)
+        collage_pipeline = collage_pipeline.composite img, mode: "over", x: x, y: y
+        x += options[:collage_args][i][2] + 40
+      end
+      collage_pipeline
+    end
+
+    def write_text(pipeline)
+      puts "Writing text #{options}"
+      text_args = options[:text_args].split(/[\,,x]/).map { |i| i.to_f }
+      background = options[:background] || [0, 0, 0]
+
+      text = Vips::Image
+        .text(options[:text], dpi: 300)
+
+      pipeline.insert text, text_args[0], text_args[1], background: [255, 0, 0, 0]
     end
 
   end

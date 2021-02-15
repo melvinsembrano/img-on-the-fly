@@ -1,3 +1,8 @@
 #/bin/bash
-
-ruby -I . -e "require 'minitest/autorun'; Dir.glob('**/*test.rb') { |f| require(f) }"
+if [ "${1}" == "" ]; then
+  echo "Running all tests:\n"
+  ruby -I . -e "require 'minitest/autorun'; Dir.glob('**/*test.rb') { |f| require(f) }"
+else
+echo "Running test file [${1}]\n"
+  ruby -I . $1
+fi
