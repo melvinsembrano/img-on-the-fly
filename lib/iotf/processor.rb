@@ -135,6 +135,7 @@ module Iotf
       images = []
       width = 0
       height = 0
+      background = options[:background] || [255, 255, 255]
       options[:collage_args].each_with_index do |cargs, i|
         images[i] = crop(pipeline, cargs).call
         width += cargs[2]
@@ -145,7 +146,7 @@ module Iotf
       puts images.inspect
 
       collage_pipeline = crop(pipeline, [0, 0, width, height])
-        .draw_rect(options[:background], 0, 0, width, height, fill: true)
+        .draw_rect(background, 0, 0, width, height, fill: true)
 
       x = 40
       images.each_with_index do |img, i|
@@ -158,13 +159,13 @@ module Iotf
 
     def write_text(pipeline)
       puts "Writing text #{options}"
-      text_args = options[:text_args].split(/[\,,x]/).map { |i| i.to_f }
-      background = options[:background] || [0, 0, 0]
+      text_args = (options[:text_args] || "0,0").split(/[\,,x]/).map { |i| i.to_f }
+      background = options[:background] || [0, 0, 0, 0]
 
       text = Vips::Image
         .text(options[:text], dpi: 300)
 
-      pipeline.insert text, text_args[0], text_args[1], background: [255, 0, 0, 0]
+      pipeline.insert text, text_args[0], text_args[1] # , background: background
     end
 
   end
