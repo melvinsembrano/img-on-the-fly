@@ -1,4 +1,4 @@
-require "vips"
+require "image_processing/vips"
 require "securerandom"
 
 module Iotf
@@ -66,7 +66,7 @@ module Iotf
         when "text"
           @procedures << :write_text
           @options[:text], @options[:text_args] = v.split("|")
-          
+
         when "resize"
           @procedures << k
           resize_args = v.split(/[\,,x]/)
@@ -117,6 +117,11 @@ module Iotf
       when "pad"
         return pipeline.resize_and_pad options[:width], options[:height]
       else
+        if options[:width] < 1 && options[:height] < 1
+          width, height = Vips::Image.new_from_file(cached_file).size
+          options[:width] = (width * options[:width]).to_i
+          options[:height] = (height * options[:height]).to_i
+        end
         return pipeline.resize_to_fit options[:width], options[:height]
       end
     end

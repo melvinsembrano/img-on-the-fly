@@ -40,7 +40,7 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal 100, iotf.options[:width]
     assert_equal 120, iotf.options[:height]
     assert_equal 1, iotf.procedures.length
-    assert_equal :resize, iotf.procedures.first   
+    assert_equal :resize, iotf.procedures.first
   end
 
   def test_resize_with_comma_args
@@ -55,7 +55,30 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal "fill", iotf.options[:fit]
 
     assert_equal 1, iotf.procedures.length
-    assert_equal :resize, iotf.procedures.first   
+    assert_equal :resize, iotf.procedures.first
+  end
+
+  def test_resize_with_percentages
+    params = {
+      "splat" => "path/to/image.jpg",
+      "h" => "0.9",
+      "w" => "0.9"
+    }
+
+    iotf = Iotf::Processor.new(params)
+    assert_equal 0.9, iotf.options[:width]
+    assert_equal 0.9, iotf.options[:height]
+
+    assert_equal 1, iotf.procedures.length
+    assert_equal :resize, iotf.procedures.first
+
+    iotf.stub(:cached_file, "test/fixtures/image.jpg") do
+      new_image = iotf.execute!
+      FileUtils.rm(new_image)
+
+      assert_equal 360, iotf.options[:width]
+      assert_equal 360, iotf.options[:height]
+    end
   end
 
   def test_crop_with_commas_args
@@ -71,7 +94,7 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal 100, iotf.options[:height]
 
     assert_equal 1, iotf.procedures.length
-    assert_equal :crop, iotf.procedures.first   
+    assert_equal :crop, iotf.procedures.first
   end
 
   def test_crop_with_x_and_commas_args
@@ -87,7 +110,7 @@ class Iotf::ProcessorTest < MiniTest::Test
     assert_equal 100, iotf.options[:height]
 
     assert_equal 1, iotf.procedures.length
-    assert_equal :crop, iotf.procedures.first   
+    assert_equal :crop, iotf.procedures.first
   end
 
   def test_rotate_args
