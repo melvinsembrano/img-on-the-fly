@@ -1,6 +1,6 @@
 require "test/test_helper"
 
-class Iotf::ProcessorTest < MiniTest::Test
+class Iotf::ProcessorTest < Minitest::Test
 
   def test_file_does_not_exist
     iotf = Iotf::Processor.new({})
